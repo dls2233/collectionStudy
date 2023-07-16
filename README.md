@@ -1,1 +1,13 @@
-# lanshan_homework3
+#总结<br>
+1.collection接口：list；vector,arrlist,linklist（有序，可重复）<br>
+                  set：hashset,treeset（有序，不可重复）<br>
+2.map接口：hashmap，linkhashmap（无序，不可重复）<br>
+3.常见异常类型：空指针异常（NullPointException），数组越界异常（ArrayIndexOutOfBoundsException<br>
+），强制类型转换异常（ClassCastException），数字格式化异常（NumberFormatException），输入类型不<br>
+匹配异常（InputMismatchException），算数运算符异常（ArithmeticException）：索引越界异常（Index<br>
+OutOfBoundsException），SQL异常（SQLException），内存溢出异常（OutOfMemoryError）IO异常（IOEx<br>
+ception），找不到文件异常（FileNotFoundException）<br>
+4.异常处理方法：try-catch，throws，throw
+5.throw，与throws的区别：throws放在方法声明的后面，表示报出异常，由该方法的调用者来处理；throw作<br>
+用在方法内部，后面跟着的是异常的对象
+6.泛型
