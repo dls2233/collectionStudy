@@ -1,0 +1,6 @@
+//问题：为什么大型并发系统环境中使用 Executors 如果不注意可能会出现系统风险捏？？？
+/*<br>
+    Executors提供的很多方法默认使用的都是无界的LinkedBlockingQueue，链接队列的吞吐量通常要高于基于
+    数组的对列（ArrayBlockingQueue），但是无界队列如果未指定容量，则没有固定大小，会导致插入节点过多
+    后，出现oom（OutOfMemoryError），造成系统无法处理此问题
+*/
