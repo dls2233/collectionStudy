@@ -4,3 +4,75 @@
     数组的对列（ArrayBlockingQueue），但是无界队列如果未指定容量，则没有固定大小，会导致插入节点过多
     后，出现oom（OutOfMemoryError），造成系统无法处理此问题
 */
+
+import org.junit.Test;
+
+import java.util.concurrent.*;
+
+
+//线程练习
+
+public class Main{
+    public static void main(String[] args) throws Exception {
+        MyRunAble runAble=new MyRunAble();
+        runAble.run();
+        MyCallable myCallable=new MyCallable(10);
+        System.out.println(myCallable.call());;
+        new Thread(
+                () -> {
+                    for (int i = 0; i < 10; i++) {
+                        System.out.println("子线程执行输出" + i);
+                    }
+                }
+        ).start();
+    }
+    @Test
+    public void text(){
+        ExecutorService pools = new ThreadPoolExecutor(
+                3,//核心线程个数 corePoolSize
+                5,//最大线程量 maximumPoolSize
+                8,//最大时间 keepAliveTime
+                TimeUnit.SECONDS,//
+                new ArrayBlockingQueue<>(6),//任务队列
+                Executors.defaultThreadFactory(),//线程工厂
+                new ThreadPoolExecutor.AbortPolicy());//任务拒绝策略
+
+        // pool 的 execute 方法
+        pools.execute(() -> {
+            for (int i = 0; i < 50; i++) {
+                System.out.println(Thread.currentThread() + "起飞！！！" + "第" + i + "次");
+            }
+        });
+
+        pools.execute(() -> {
+            for (int i = 0; i < 50; i++) {
+                System.out.println(Thread.currentThread() + "GGGGGG" + "第" + i + "次");
+            }
+        });
+
+        pools.shutdown();
+    }
+}
+class MyRunAble implements Runnable {
+    @Override
+    public void run() {
+        System.out.println(Thread.currentThread().getName()+"线程跑起来了!!!");
+    }
+}
+class MyCallable implements Callable<String> {
+    private int n;
+
+    public MyCallable(int n) {
+        this.n = n;
+    }
+
+    //重写call方法(任务方法)(求n的加和)
+    @Override
+    public String call() throws Exception {
+        int sum = 0;
+        for (int i = 0; i <= n; i++) {
+            sum += i;
+        }
+        return "子线程执行的结果是：" + sum;
+    }
+}
