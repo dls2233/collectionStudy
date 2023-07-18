@@ -35,3 +35,9 @@ TimeUnit unit：Time类管理工具<br>
 BlockingQueue<Runnable> workQueue：指定阻塞队列<br>
 ThreadFactory threadFactory：线程工厂<br>
 RejectedExecutionHandler handler：拒绝策略<br>
+13.线程安全问题：多个线程同时共共享一个资源，并对他进行修改
+线程同步:加锁：让多个线程依次访问同一个资源
+14:锁对象为任意的唯一对象，影响其线程的进行
+规范上：使用共享资源作为锁对象，对于实例方法使用this作为锁对象，对于静态方法使用字节码（类名：class）对象作为锁对象
+
+
