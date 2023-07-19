@@ -1,0 +1,361 @@
+/*
+实现方法：
+自定义接口，创建飞机与子弹的实现类来实现接口，在判定敌方飞机与我方飞机，地方子弹与我方飞机，我方子弹与地方飞机碰撞时，将我放飞机，敌方飞机
+子弹加入线程中，通过重写run方法来实现碰撞判定。
+*/
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Random;
+
+//实现游戏主体的主要方法
+interface Entity {
+    public void move();//用于图片的移动
+
+    public void draw(Graphics g);//用于图片的绘制
+
+    public int getX();//获取x坐标
+
+    public int getY();//获取y坐标
+
+    public void hit(int i);//飞机被击中时调用此方法
+
+    public adjuge()//边界判断
+}
+//使用jFrame设置窗口，并使用KryListener接口实现键盘交互
+public class interaction implements KeyListener {//键盘监听器，传递keyEvent
+
+    Background bg=new Background();
+    Plane plane=new Plane();
+    ArrayList<Entity> listPlan_ =new ArrayList<Entity>();
+    ArrayList<Entity> listBullet =new ArrayList<Entity>();
+
+    public void UI(){
+
+        JFrame frame=new JFrame();//使用jFrame框架生成一个窗口
+        frame.setSize(500, 1000);//设置大小
+        frame.setVisible(true);//可见性
+        Graphics g=frame.getGraphics();
+
+        Plane_Move em=new Plane_Move(listPlan_);
+        em.start();
+        MyBulletMove bm=new MyBulletMove(listBullet, plane);
+        bm.start();
+
+        frame.addKeyListener(this);
+        frame.addKeyListener(this);
+
+        //创建缓存图片对象
+        BufferedImage bufferImage = new BufferedImage(frame.getWidth(), 2 * frame.getHeight(), BufferedImage.TYPE_INT_RGB);
+
+        //从缓存图片获取画布对象
+        Graphics bufferedG=bufferImage.getGraphics();
+
+        //在所有元素没有画完前,不显示
+        //这里要把所有对象都找出来，调用他们的draw方法，同时move方法也可以在这里一起调用
+
+        //把缓存图片显示出来
+        g.drawImage(bufferImage, 0, -1000, null);
+
+        try {
+            Thread.sleep(20);
+        } catch (InterruptedException e) {
+        }
+        while (true){
+            bg.draw(bufferedG);
+            bg.move();
+            //生成敌机
+            for(int i=0;i<listPlan_.size();i++){
+                Entity entity=listPlan_.get(i);
+                entity.draw(bufferedG);
+                entity.move();
+            }
+            //找到所有敌机子弹
+            for(int i=0;i<listBullet.size();i++){
+                Entity entity=listBullet.get(i);
+
+                entity.draw(bufferedG);
+                entity.move();
+            }
+            plane.draw(bufferedG);
+        }
+    }//窗口设置
+
+    public static void main(String[] args) {
+        new interaction().UI();
+    }
+
+    public void keyPressed(KeyEvent e) {
+        int code = e.getKeyCode();
+        //获取到按下的按钮后传给主机的move()
+        plane.code=code;
+        plane.move();
+    }//释放某个键值
+
+    public void keyTyped(KeyEvent e) {}//键入某个键值
+
+    public void keyReleased(KeyEvent e) {}//按下键值时调用此方法
+
+}
+//背景（随时间变化对背景进行移动）
+class Background implements Entity {
+    Image image = new ImageIcon("img.png").getImage();
+    int x,y;
+    public void move() {
+        y += 2;
+    }
+
+    public void draw(Graphics g) {
+        if (y - image.getHeight(null) >= 0) {
+            y = 0;
+        }
+        g.drawImage(image, x, y, null);
+        g.drawImage(image, x, y + image.getHeight(null), null);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void hit(int i) {}
+}
+//玩家飞机
+class Plane implements Entity{
+    int x=250;
+    int y=1850;
+    int speed=10;
+    int code;//用于KeyListener的检测
+    Image image=new ImageIcon("img_1.png").getImage();
+    //调用键盘监听器键，盘键入的值实现对相的操作
+    public void move() {
+        if(code==KeyEvent.VK_UP){
+            y -=speed;
+        }
+        if(code==KeyEvent.VK_DOWN){
+            y+=speed;
+        }
+        if(code==KeyEvent.VK_LEFT){
+            x-=speed;
+        }
+        if(code==KeyEvent.VK_RIGHT){
+            x+=speed;
+        }
+    }
+
+    public void draw(Graphics g) {
+        g.drawImage(image, x-44, y, null);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void hit(int i){
+        image = new ImageIcon("img_2.png").getImage();
+    }
+    public void adjuge(){
+        if(get(x)<0){
+            x=0;
+        }else if(get(x)>500){
+            x--;
+        }
+        if(get(y)<0){
+            y=0;
+        }else if(get(y)>1000){
+            y--;
+        }
+    }
+}
+//敌方飞机
+class Plane_ implements Entity{
+    int x;
+    int y=600;
+    ArrayList<Entity> list;
+    Random rand=new Random();
+    int a=rand.nextInt(2);//敌机速度判定
+    Image image=new ImageIcon("img_3.png").getImage();
+    //调用random方法实现随机生成
+    public Plane_() {
+        Random randy=new Random();
+        this.x=randy.nextInt(340)+80;
+    }
+
+    public void move() {
+        if(a==0){
+            y+=2;
+        }else if(a==1){
+            y+=4;
+        }
+    }
+
+    public void draw(Graphics g) {
+        g.drawImage(image, x, y, 90, 90, null);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    @Override
+    public void hit(int i) {
+        list.remove(i);
+    }
+    public void adjuge(){
+        if(get(x)<0){
+           list.remove(i);
+        }else if(get(x)>500){
+           list.remove(i);
+        }
+        if(get(y)<0){
+           list.remove(i);
+        }else if(get(y)>1000){
+           list.remove(i);
+        }
+    }
+}
+//敌机移动
+class Plane_Move extends Thread {
+    private ArrayList<Entity> listPlan_;
+    public Plane_Move (ArrayList<Entity> listPlan_) {
+        this.listPlan_=listPlan_;
+    }
+
+    public void run(){
+        while(true){
+            Plane_ ep=new Plane_();
+            listPlan_.add(ep);
+            ep.list=listPlan_;
+        }
+    }
+}
+//子弹
+class Bullet implements Entity {
+    int m;//0表示子弹向上飞，1表示子弹向左上飞，2表示子弹向右上飞
+    int x;
+    int y;
+    ArrayList<Entity> list;
+    Image image = new ImageIcon("bullet1.png").getImage();
+
+    public void move() {
+        if (m == 0) {
+            y -= 9;
+        } else if (m == 1) {
+            y -= 7;
+            x -= 2;
+        } else if (m == 2) {
+            y -= 7;
+            x += 2;
+        }
+    }
+
+    public void draw(Graphics g) {
+        g.drawImage(image, x, y, null);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void hit(int i) {
+        //移除队列
+        list.remove(i);
+    }
+}
+//己方子弹飞行判定
+class MyBulletMove extends Thread{
+    private Plane mp;
+    private ArrayList<Entity> listBullet;
+    public MyBulletMove (ArrayList<Entity> listBullet, Plane mp){
+        this.listBullet=listBullet;
+        this.mp=mp;
+    }
+    public void run(){
+        while(true){
+            Bullet upbullet=new Bullet();
+            upbullet.m=0;//向上飞
+            upbullet.x=mp.x-11;
+            upbullet.y=mp.y;
+
+            upbullet.list=listBullet;
+            listBullet.add(upbullet);
+
+            try{
+                Thread.sleep(400);//子弹发射的间隔
+            }catch(Exception e){
+            }
+        }
+    }
+}
+//检测撞方法
+class CheckForCrash extends Thread{
+    private ArrayList<Entity> listBullet;
+    private ArrayList<Entity> listPlane_;
+    private Plane mp;
+    public CheckForCrash(ArrayList<Entity> listPlan_,ArrayList<Entity> listBullet, Plane mp) {
+        this.listPlane_=listPlan_;
+        this.listBullet=listBullet;
+        this.mp=mp;
+    }
+
+    public void run() {
+        while (true) {
+            for (int i = listBullet.size() - 1; i > 0; i--) {
+                Entity temA = listBullet.get(i);
+                for (int j = 0; j < listPlane_.size(); j++) {
+                    Entity temB = listPlane_.get(j);
+                    if (Tools.eneMyMyCrash(temB, mp)) {
+                        temA.hit(j);
+                        mp.hit(j);
+                    }
+                    if (Tools.bulletEneMyCrash(temA, temB)) {
+                        temA.hit(i);
+                        temB.hit(j);
+                    }
+                }
+            }
+        }
+    }
+}
+class Tools {
+    // 敌机我机碰撞
+    public static boolean eneMyMyCrash(Entity e, Plane mp) {
+        if (Math.abs((e.getX() + 45) - (mp.getX() - 1)) < 40 && Math.abs((e.getY() + 45) - (mp.getY() + 55)) < 40) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // 敌机子弹相撞
+    public static boolean bulletEneMyCrash(Entity ea, Entity eb) {
+        if ((ea instanceof Plane_) && (eb instanceof Bullet)) {
+            if (Math.abs((ea.getX() + 45) - (eb.getX() + 10)) < 20 && Math.abs((ea.getY() + 45) - eb.getY()) < 20) {
+                return true;
+            }
+        } else if ((ea instanceof Bullet) && (eb instanceof Plane_)) {
+            if (Math.abs((ea.getX() + 10) - (eb.getX() + 45)) < 20 && Math.abs(ea.getY() - (eb.getY() + 45)) < 20) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
